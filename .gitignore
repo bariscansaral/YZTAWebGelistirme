@@ -1,0 +1,66 @@
+# ================================
+# PYCHARM / IDE AYARLARI
+# ================================
+
+.idea/
+# PyCharm'ın kişisel ayarları (pencere düzeni, interpreter yolu vb.)
+# Kod değildir, her bilgisayarda farklıdır, bu yüzden git'e girmez.
+
+
+# ================================
+# PYTHON GEÇİCİ DOSYALARI
+# ================================
+
+__pycache__/
+# Python çalışırken otomatik oluşturur.
+# Silinse bile tekrar üretilir, kaynak kod değildir.
+
+*.pyc
+# Python'un derlenmiş bytecode dosyaları.
+# Versiyona ve sisteme bağlıdır, repo'da yeri yok.
+
+
+# ================================
+# VIRTUAL ENVIRONMENT
+# ================================
+
+.venv/
+venv/
+# Python sanal ortam klasörleri.
+# İçinde Python ve paketlerin kopyası vardır.
+# Çok büyük olur ve her bilgisayarda yeniden oluşturulabilir.
+
+
+# ================================
+# ORTAM DEĞİŞKENLERİ (GİZLİ BİLGİLER)
+# ================================
+
+.env
+# API key, şifre, gizli bilgiler içerir.
+# ASLA GitHub'a gönderilmez.
+# Bunun yerine .env.example kullanılır.
+
+
+# ================================
+# FRONTEND / NODE.JS
+# ================================
+
+node_modules/
+# npm / yarn ile indirilen paketler.
+# 'npm install' ile yeniden gelir, repo'yu şişirir.
+
+dist/
+build/
+# Projenin derlenmiş çıktıları.
+# Kaynak kod değil, üretilmiş sonuçtur.
+
+
+# ================================
+# İŞLETİM SİSTEMİ ARTIKLARI
+# ================================
+
+.DS_Store
+# macOS'un otomatik oluşturduğu dosya.
+
+Thumbs.db
+# Windows'un otomatik oluşturduğu dosya.
