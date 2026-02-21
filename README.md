@@ -35,3 +35,49 @@ Bu proje ilerledikçe aşağıdaki başlıklar ele alınacaktır:
 
 ---
 
+---
+
+---
+
+---
+
+---
+
+
+# Pydantic Nedir
+
+Pydantic, Python’da veri doğrulama (validation) ve tip kontrolü yapmanı sağlayan bir kütüphanedir.
+Özellikle API geliştirirken (örneğin FastAPI ile) gelen verilerin doğru tipte ve formatta olup olmadığını otomatik olarak kontrol etmek için kullanılır.
+
+Python esnek (dinamik tipli) bir dil olduğu için sınıflarda değişkenlere belirtilen veri tipleri dışında farklı tiplerde değerler atanabilir ve bu durum her zaman hata oluşturmaz. İlk bakışta sorun gibi görünmese de, 
+özellikle büyük projelerde ve API geliştirme süreçlerinde beklenmeyen hatalara yol açabilir. Bu tür veri tutarsızlıklarını önlemek ve daha güvenli bir yapı sağlamak amacıyla Pydantic ortaya çıkmıştır.
+
+PydanticLearningMain.py dosyasında, sınıfların Pydantic kullanılmadan ve Pydantic ile birlikte oluşturulduğunda veri tiplerinde nasıl değişiklikler olabileceği detaylıca gösterilmiştir. Pydantic kullanılmadığı senaryoda, değişkenin tipini önceden belirlesen bile farklı tipte değerler atayabilirsin ve Python 
+bunu hata olarak vermez. Oysa Pydantic sayesinde, doğru şekilde yazdığın sürece (örneğin bir Boolean değişkene "True" gibi string değer atamak) veri tipi otomatik olarak dönüştürülür. Ancak yanlış değer atarsan (örneğin "asdasd" gibi Boolean olmayan bir ifade) Pydantic hata verir. Yani Pydantic, veri tiplerini güvenli ve tutarlı bir şekilde yönetmeyi sağlar.
+
+---
+
+# Python Senkron ve Asenkron Çalışma Açıklaması
+
+Bu proje, Python’da senkron (blocking) ve asenkron (non-blocking) fonksiyonların farkını öğretmek amacıyla hazırlanmıştır. Kodda iki fonksiyon üzerinden hem senkron hem de asenkron çalışmayı görebilirsiniz.
+
+## Senkron Çalışma
+
+Senkron çalışma, işlemlerin ardışık olarak yürütüldüğü klasik yöntemdir. Burada bir fonksiyon tamamlanmadan bir sonraki fonksiyon başlamaz. Örneğin, `my_func1()` tamamlanmadan `my_func2()` çalışmaz. Bu nedenle toplam süre, iki fonksiyonun sürelerinin toplamına eşittir. Senkron çalışma basittir ancak uzun süren görevlerde programın beklemesine sebep olur.
+
+## Asenkron Çalışma
+
+Asenkron çalışma, işlemlerin eş zamanlı (concurrent) yürütülmesini sağlar. Python’da bunu `asyncio` kütüphanesi ile gerçekleştirebiliriz. Asenkron programlamada fonksiyonlar `async def` ile tanımlanır ve çalıştırılırken `await` kullanılır.
+
+- `async def`: Fonksiyonları asenkron olarak tanımlar. Bu fonksiyonlar `await` ile çalıştırılabilir.
+- `await`: Asenkron işlemin tamamlanmasını bekler. `await` kullanılmazsa fonksiyon çalıştırılmaz ve hata alınır.
+- `asyncio.create_task()`: Asenkron fonksiyonları task olarak başlatır, arka planda çalışmasını sağlar ve diğer görevlerle eş zamanlı yürütülmesine imkan tanır.
+- `async def main()` ve `asyncio.run(main())`: Asenkron görevlerin yönetildiği ana fonksiyondur. Tüm task’lar burada başlatılır ve çalıştırılır.
+
+Asenkron çalışmada fonksiyonlar eş zamanlı çalıştırıldığı için toplam süre, tek bir fonksiyonun süresine yakın olur. Bu yöntem özellikle I/O bekleyen işlemlerde veya uzun süren görevlerde programın daha verimli çalışmasını sağlar.
+
+## Özet
+
+- Senkron: Fonksiyonlar ardışık çalışır, toplam süre fonksiyon sürelerinin toplamına eşittir.
+- Asenkron: Fonksiyonlar eş zamanlı çalışır, toplam süre genellikle en uzun fonksiyon süresine yakın olur.
+- Asenkron programlama, modern Python’da performansı artırmak için kritik bir yöntemdir.
