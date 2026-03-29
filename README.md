@@ -108,3 +108,28 @@ Eğer iki farklı fonksiyon aynı adres yapısını (Örn: `/courses/{değişken
 ### 🔍 Otomatik Dökümantasyon (Swagger UI)
 FastAPI'nin en büyük kolaylığı, yazdığımız tüm bu fonksiyonları görsel bir panelde test etmemize izin vermesidir. Uygulama çalışırken şu adresten tüm endpointleri deneyebilirsin:
 `http://127.0.0.1:8000/docs`
+
+---
+
+## 🚀 Uygulama: Pydantic ile Veri Güvenliği ve Otomatik ID Yönetimi
+
+Bu aşamada projemizi bir üst seviyeye taşıyarak verileri sadece işlemekle kalmadık, aynı zamanda bir "Kalite Kontrol" (Validation) mekanizması kurduk.
+
+### 🛠 Neler Öğrendim ve Uyguladım?
+
+- **Pydantic & BaseModel:** Veri girişlerini belirli bir kalıba soktuk. Artık sisteme rastgele veri giremiyoruz; her girişin tipi ve sınırları belli.
+- **Field Sınıfı (Tolerans Yönetimi):** Verilerin içeriğine kısıtlamalar koyduk. Örneğin bir kursun puanı (`rating`) 0-6 arası olmalı veya yayınlanma tarihi (`published_date`) belirli bir yıl aralığında kalmalı.
+- **HTTP Status Codes:** İşlemlerin sonucuna göre (Başarılı: 200, Oluşturuldu: 201, Veri Yok: 204 vb.) standart internet protokolü kodlarını kullanmaya başladık.
+- **HTTPException (Hata Yakalama):** Aranan bir ID bulunamadığında sistemin "çökmesi" yerine kullanıcıya anlamlı bir hata mesajı (404 Not Found) dönmesini sağladık.
+
+### 📝 Teknik Detaylar
+
+- **Otomatik ID Atama:** Kullanıcının her seferinde benzersiz bir ID bulup girmesi zahmetinden kurtulduk. `find_course_id` fonksiyonu ile sistem, veritabanındaki son kaydı kontrol edip bir sonraki ID'yi otomatik atıyor.
+- **model_config & JSON Schema:** API dokümantasyonunda (`/docs`) kullanıcının işini kolaylaştıracak "örnek veri formatı" (example) hazırladık.
+- **model_dump() & Unpacking:** Pydantic nesnelerini standart Python sözlüklerine dönüştürüp `**` operatörü ile sınıflar arası hızlı veri transferi yapmayı öğrendik.
+- **Gelişmiş CRUD:**
+    - **POST:** Yeni kayıtları otomatik ID ile ekliyoruz.
+    - **PUT:** Mevcut kayıtları Pydantic doğrulamasıyla güncelliyoruz.
+    - **DELETE:** Belirli bir ID'yi güvenli bir şekilde (hata kontrolü yaparak) siliyoruz.
+
+> **Mühendislik Notu:** `update` işlemi için aynı sınıfı kullanmak pratik olsa da, ileride sadece belirli alanların güncellenmesi gereken durumlar için "Update-Specific" sınıflar oluşturmanın daha temiz (clean code) bir yaklaşım olacağını not ettik.
