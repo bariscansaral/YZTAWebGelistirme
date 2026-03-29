@@ -81,3 +81,30 @@ Asenkron çalışmada fonksiyonlar eş zamanlı çalıştırıldığı için top
 - Senkron: Fonksiyonlar ardışık çalışır, toplam süre fonksiyon sürelerinin toplamına eşittir.
 - Asenkron: Fonksiyonlar eş zamanlı çalışır, toplam süre genellikle en uzun fonksiyon süresine yakın olur.
 - Asenkron programlama, modern Python’da performansı artırmak için kritik bir yöntemdir.
+
+---
+
+## 🚀 Uygulama: FastAPI ile İlk API Denemesi (CRUD İşlemleri)
+
+Bu aşamada, bir kurs veritabanı simülasyonu üzerinden temel HTTP yöntemlerini (metotlarını) uyguladım.
+
+### 🛠 Temel Terimler ve Mantık
+
+- **Endpoint (Uç Nokta):** Web sitesindeki adres uzantılarıdır (Örn: `/courses`).
+- **Path Parameter (Yol Parametresi):** Adres çubuğuna direkt yazdığımız özel bilgilerdir. "Sadece bu ID'ye sahip parçayı getir/sil" komutudur.
+- **Body (Gövde):** Veriyi adres çubuğunda değil, bir paket içinde göndermektir. Yeni bir kayıt eklerken (POST) veya bir kaydı güncellerken (PUT) tüm veri setini bu paketle içeri alırız.
+- **CRUD:** Bir veriyi Oluşturma (Create), Okuma (Read), Güncelleme (Update) ve Silme (Delete) işlemlerinin genel adıdır.
+
+### 📝 Yapılan İşlemler (Fonksiyonlar)
+
+- **GET (Okuma):** Sistemdeki mevcut verileri listeleriz. Tüm kursları görebilir veya belirli bir kurs ismine/kategorisine göre filtreleme yapabiliriz.
+- **POST (Oluşturma):** `Body()` kullanarak dışarıdan yeni bir kurs verisini sisteme dahil ederiz.
+- **PUT (Güncelleme):** Mevcut bir kaydın üzerine yeni bilgileri yazarız. "Şu ID'li kursun eğitmenini değiştir" komutu gibi çalışır.
+- **DELETE (Silme):** Belirlediğimiz bir ID'yi sistemden tamamen çıkarırız. Burada adres çubuğuna ID yazmak (Path Parameter), tüm veritabanını silmek yerine sadece hedeflediğimiz kaydı silmemizi sağlar.
+
+### ⚠️ Önemli Not: Path Çakışması (Conflict)
+Eğer iki farklı fonksiyon aynı adres yapısını (Örn: `/courses/{değişken}`) kullanıyorsa, program hangisini çalıştıracağını karıştırabilir. Bu yüzden ID ile arama yaparken `/courses/byid/{id}` gibi daha spesifik bir path tanımlamak sistemin hata vermesini önler.
+
+### 🔍 Otomatik Dökümantasyon (Swagger UI)
+FastAPI'nin en büyük kolaylığı, yazdığımız tüm bu fonksiyonları görsel bir panelde test etmemize izin vermesidir. Uygulama çalışırken şu adresten tüm endpointleri deneyebilirsin:
+`http://127.0.0.1:8000/docs`
