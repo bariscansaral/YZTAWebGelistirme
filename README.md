@@ -133,3 +133,33 @@ Bu aşamada projemizi bir üst seviyeye taşıyarak verileri sadece işlemekle k
     - **DELETE:** Belirli bir ID'yi güvenli bir şekilde (hata kontrolü yaparak) siliyoruz.
 
 > **Mühendislik Notu:** `update` işlemi için aynı sınıfı kullanmak pratik olsa da, ileride sadece belirli alanların güncellenmesi gereken durumlar için "Update-Specific" sınıflar oluşturmanın daha temiz (clean code) bir yaklaşım olacağını not ettik.
+
+ ---
+
+> ## 🗄️ SQL Temelleri ve Veritabanı Mimarisi
+
+Bu aşamada veritabanlarının çalışma mantığını, SQL dilini ve projemizi nasıl "kalıcı" (persistent) hale getireceğimizi öğrendik. Artık verilerimiz RAM'de değil, fiziksel bir `.db` dosyasında saklanıyor.
+
+### 📊 SQL (Structured Query Language) Notları
+Veritabanı üzerinde işlem yapmak için kullandığımız temel komutlar:
+
+- **SELECT:** Verileri çağırmak için kullanılır. `SELECT *` tüm kolonları, `SELECT name, hint` ise sadece belirli kolonları getirir.
+- **LIMIT:** Gelen veri miktarını sınırlandırır (Örn: `LIMIT 10`).
+- **WHERE & LIKE:** Verileri filtrelemek için kullanılır. 
+    - `WHERE id=4`: Tam eşleşme.
+    - `LIKE 'A%'`: A ile başlayanlar.
+    - `LIKE '%i'`: i ile bitenler.
+    - `LIKE '%e%'`: İçinde e geçenler.
+- **INSERT INTO:** Yeni veri eklemek için kullanılır. Kolon sırasına ve veri tipine dikkat edilmelidir.
+- **UPDATE & SET:** Mevcut verileri güncellemek için kullanılır (`WHERE` ile hedef belirtmek kritiktir!).
+- **DELETE:** Veri silmek için kullanılır.
+
+### 🏗️ SQLAlchemy Proje Yapısı
+
+1. **Database Konfigürasyonu:** SQLite bağlantı ayarları yapıldı ve `SessionLocal` ile veritabanı "oturumları" oluşturuldu.
+2. **Model Tanımlama:** `Todo` sınıfı, `Base` kalıbından türetilerek veritabanında fiziksel bir tabloya (`todos`) dönüştürüldü.
+    - `id`: Benzersiz seri numarası (Primary Key).
+    - `completed`: İşlem durumunu tutan Boolean (Varsayılan: False).
+3. **Tablo Oluşturma:** `Base.metadata.create_all(bind=engine)` komutu ile tanımladığımız modellerin fiziksel `.db` dosyasında otomatik olarak oluşturulması sağlandı.
+
+> **Gelecek Planı:** Kullanıcının girdiği basit iş tanımlarını Gemini yapay zekasına gönderip daha detaylı ve profesyonel açıklamalara (description) dönüştürecek bir yapı kuracağız.
