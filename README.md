@@ -188,3 +188,84 @@ db_dependency = Annotated[Session, Depends(get_db)]
 @app.get("/")
 async def read_data(db: db_dependency):
     return db.query(Todo).all()
+```
+---
+### 📂 Proje Mimarisi: APIRouter ve Modüler Yapı
+
+Proje büyüdükçe tüm kodları tek bir `main.py` içinde tutmak yerine, FastAPI'nin **APIRouter** özelliğini kullanarak uygulamayı mantıksal parçalara böldük.
+
+#### 1. Neden APIRouter Kullanıyoruz?
+- **Sorumlulukların Ayrılması (Separation of Concerns):** Kimlik doğrulama (Auth) işlemlerini ayrı, yapılacak işler (Todo) işlemlerini ayrı dosyalarda yönetiyoruz.
+- **Bakım Kolaylığı:** Bir hata oluştuğunda ilgili modüle gitmek binlerce satırlık tek bir dosyada arama yapmaktan çok daha hızlıdır.
+- **Ekip Çalışması:** Farklı geliştiricilerin birbirinin kodunu bozmadan farklı dosyalar üzerinde çalışmasına olanak tanır.
+
+#### 2. Uygulama Mantığı
+- `routers/` adında bir Python paketi oluşturuldu.
+- `todoauth.py` içinde `router = APIRouter()` tanımlanarak kullanıcı işlemleri buraya taşındı.
+- `main.py` içinde `app.include_router(auth_router)` komutuyla bu alt sistem ana merkeze bağlandı.
+
+---
+
+## 🔐 Kimlik Doğrulama ve Güvenlik Mimarisi (Authentication & JWT)
+
+Projenin bu aşamasında, kullanıcıların güvenli bir şekilde sisteme giriş yapabilmesi ve sadece kendi verilerine ulaşabilmesi için modern web standartlarını (**JWT** ve **OAuth2**) entegre ettik.
+
+### 1. JWT (JSON Web Token) Nedir?
+JWT, taraflar arasında verilerin güvenli ve doğrulanabilir bir şekilde iletilmesini sağlayan, dijital olarak imzalanmış bir veri formatıdır.
+
+* **Token Nedir?**: Kullanıcı sisteme başarılı bir şekilde giriş yaptığında ona verilen bir **Dijital Geçiş Kartı**dır.
+* **Neden Oluşturulur?**: Kullanıcının her isteğinde (örneğin bir todo silerken) tekrar tekrar şifre girmesini engeller. Token sayesinde sunucu, isteği gönderen kişinin kim olduğunu her seferinde şifre sormadan anlar.
+
+### 2. Bearer Token ve OAuth2PasswordBearer Nedir?
+* **Bearer (Taşıyıcı) Ne Demek?**: "Bearer" kelimesi "taşıyan kişi" anlamına gelir. Eğer elinizde bu token varsa, sistem sizi o token'ın sahibi olarak kabul eder. Yani "bu anahtarı taşıyan kişi yetkilidir" mantığıyla çalışır.
+* **OAuth2PasswordBearer**: FastAPI'nin bize sunduğu bir araçtır. Görevi şudur: Gelen isteğin içindeki "Authorization" başlığına (Header) bakar, "Bearer <token>" yazısını arar ve oradaki token'ı çekip alır. Eğer token yoksa, kullanıcıyı otomatik olarak giriş sayfasına yönlendirir veya hata verir.
+
+
+
+### 3. Token Nasıl Çalışır ve Kontrol Edilir? (Encode & Decode)
+Sistemimizdeki döngü şu şekildedir:
+
+1.  **Giriş (Login):** Kullanıcı adı ve şifresini gönderir.
+2.  **Doğrulama (Authenticate):** `passlib` (bcrypt) kullanılarak girilen ham şifre, veritabanındaki "hash"lenmiş (karmaşıklaştırılmış) haliyle karşılaştırılır. Şifreler asla veritabanında açık okunabilir halde tutulmaz!
+3.  **Mühürleme (Encode):** Bilgiler doğruysa, `SECRET_KEY` ve `HS256` algoritması kullanılarak kullanıcı bilgilerini (ID, Username, Role) içeren bir **Token** üretilir (`jwt.encode`). 
+4.  **Kullanım:** Kullanıcı sonraki tüm isteklerinde bu tokenı sunucuya gönderir.
+5.  **Çözme ve Kontrol (Decode):** Sunucu gelen tokenı kendi gizli anahtarıyla çözer (`jwt.decode`). Eğer token'ın süresi dolmuşsa (`exp`) veya içindeki veriyle oynanmışsa, imza geçersiz sayılır ve erişim reddedilir.
+
+### 4. Bağımlılık Enjeksiyonu (Dependency Injection - `Depends`) Derinlemesine
+
+FastAPI'deki `Depends` mekanizması, bir fonksiyonun çalışması için dışarıdan gereken "araçları" veya "şartları" (bağımlılıkları) otomatik olarak sağlayan profesyonel bir sistemdir.
+
+#### **A. Nedir ve Neden Vardır?**
+Yazdığın bir fonksiyonu bir **makine** gibi düşün. Bu makinenin çalışması için "Elektrik" (Veritabanı bağlantısı) ve "Operatör Kartı" (Kullanıcı Token'ı) gerekiyor. 
+- **Eski Yöntem:** Her fonksiyonun içinde tek tek kablo döşemek (DB bağlantısı açmak) ve kartı kontrol eden onlarca satır kod yazmak. Bu yöntem hem kod kalabalığı yaratır hem de bir hata yapıldığında tüm sistemi bozar.
+- **Dependency Injection:** Fonksiyona bir "fiş" takmaktır. `Depends` bu fişi temsil eder. Sen fonksiyonun içine girmeden, FastAPI senin için o veritabanı bağlantısını kurar ve kullanıcıyı kontrol eder; her şeyi hazır bir paket olarak fonksiyonun kucağına bırakır.
+
+
+
+#### **B. Ne İşe Yarar?**
+* **Kod Tekrarını (DRY - Don't Repeat Yourself) Önler:** 50 farklı işlem (get, post, delete) için ayrı ayrı "Kullanıcı giriş yapmış mı?" kontrolü yazmazsın. Bir kere `get_current_user` yazarsın, her yerde tek satırla çağırırsın.
+* **Güvenlik Duvarı Oluşturur:** Eğer `user_dependency` hata verirse (token geçersizse veya süresi dolmuşsa), senin asıl fonksiyonun (silme, ekleme vb.) **asla çalışmaz**. Güvenlik kontrolü daha kapıdayken biter, veritabanına yük binmez.
+* **Merkezi Yönetim ve Bakım:** Yarın bir gün veritabanı sistemini değiştirirsen veya token ömrünü 20 dakikadan 60 dakikaya çıkarmak istersen, sadece bağımlılık fonksiyonunu güncellersin. Tüm proje anında yeni kurala uyar.
+
+#### **C. Ne Zaman Kullanılır?**
+* **Veritabanı Bağlantılarında:** Her istekte bağlantıyı güvenli açıp kapatmak için (`get_db`).
+* **Güvenlik ve Yetkilendirmede:** Kullanıcının kimliğini doğrulamak veya "admin" olup olmadığını anlamak için (`get_current_user`).
+* **Veri Filtrelemede:** Gelen ham veriyi işlemden önce ortak bir mantık süzgecinden geçirmek istiyorsan.
+
+#### **D. Ne Zaman Kullanılmaz?**
+* **Bağımsız Fonksiyonlarda:** Dış dünyaya (veritabanı, internet, dosya sistemi) ihtiyacı olmayan, sadece kendi içindeki veriyi işleyen basit matematiksel fonksiyonlarda kullanmaya gerek yoktur.
+* **Performans Darboğazları:** Eğer bir bağımlılık fonksiyonu her çağrıldığında çok ağır (gigabaytlarca veri okumak gibi) bir iş yapıyorsa, onu her endpoint'e kontrolsüzce eklememek gerekir. Sadece gerçekten o veriye ihtiyaç duyan kritik noktalarda kullanılmalıdır.
+
+
+### 5. Veri İzolasyonu ve Sahiplik (Owner ID)
+Web tasarımında en kritik güvenlik kurallarından biri **veri izolasyonu**dur.
+* **Problem:** Sadece giriş yapmış olmak yetmez; bir kullanıcı başkasının verisini silememelidir.
+* **Çözüm:** Veritabanındaki her Todo kaydına bir `owner_id` ekledik. Filtreleme yaparken hem Todo'nun ID'sine hem de giriş yapan kullanıcının ID'sine bakıyoruz. 
+* **Neden Önemli?**: Bu yapı kurulmazsa, kötü niyetli bir kullanıcı sadece ID numaralarını değiştirerek (örn: `todo/1`, `todo/2`) tüm veritabanını silebilir veya okuyabilir.
+
+---
+
+### 🚀 Teknik Özet ve Önemli Kavramlar
+- **Bcrypt (Hashing):** Şifreleri "tek yönlü" karıştırır. Geri döndürülemez, sadece karşılaştırılabilir.
+- **Payload:** Token'ın içinde taşıdığı verilerdir (Kullanıcı adı, ID vb.).
+- **Expiration Time (exp):** Token'ın ömrüdür. Çalınsa bile kısa süre sonra geçersiz kalmasını sağlayarak güvenliği artırır.
