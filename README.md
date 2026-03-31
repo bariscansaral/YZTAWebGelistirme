@@ -162,4 +162,29 @@ Veritabanı üzerinde işlem yapmak için kullandığımız temel komutlar:
     - `completed`: İşlem durumunu tutan Boolean (Varsayılan: False).
 3. **Tablo Oluşturma:** `Base.metadata.create_all(bind=engine)` komutu ile tanımladığımız modellerin fiziksel `.db` dosyasında otomatik olarak oluşturulması sağlandı.
 
-> **Gelecek Planı:** Kullanıcının girdiği basit iş tanımlarını Gemini yapay zekasına gönderip daha detaylı ve profesyonel açıklamalara (description) dönüştürecek bir yapı kuracağız.
+---
+
+>## 💉 Gelişmiş Dependency Injection (Bağımlılık Enjeksiyonu) ve `Annotated` Kullanımı
+
+Veritabanı işlemlerinde verimliliği artırmak ve kod tekrarını önlemek amacıyla **Dependency Injection (Bağımlılık Enjeksiyonu)** yapısını kurduk. Bu yapıyı daha profesyonel hale getirmek için `typing.Annotated` kütüphanesini kullandık.
+
+#### 1. Dependency Injection (DI) Nedir?
+DI, bir fonksiyonun çalışması için gereken dış kaynağın (örneğin Veritabanı Oturumu), fonksiyonun içinde yaratılması yerine dışarıdan bir "yakıt hattı" gibi içeri aktarılmasıdır.
+
+#### 2. `Annotated` ile Standart Bağlantı Aparatı Oluşturma
+Normalde her API fonksiyonunun içine uzun uzun `db: Session = Depends(get_db)` yazmamız gerekir. `Annotated` kullanarak bu bağımlılığı bir tip tanımı olarak standartlaştırdık.
+
+**Neden `Annotated` Kullanıyoruz?**
+- **Kod Temizliği:** Fonksiyon parametrelerini kalabalıktan kurtarır.
+- **Tek Merkezden Kontrol:** Veritabanı alma yöntemini değiştirmek istediğimizde 50 farklı yeri değil, sadece en baştaki `db_dependency` tanımını değiştirmemiz yeterli olur.
+- **Tip Güvenliği:** Yazılım editörünün bize hangi verinin (Session) geleceğini tam olarak bilmesini sağlar.
+
+**Kod Örneği:**
+```python
+# Standart bağlantı ucu (Dependency) tanımlama
+db_dependency = Annotated[Session, Depends(get_db)]
+
+# Kullanımı: Artık her fonksiyon sadece bu ucu takıyor
+@app.get("/")
+async def read_data(db: db_dependency):
+    return db.query(Todo).all()
