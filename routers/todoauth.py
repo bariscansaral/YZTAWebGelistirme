@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from todomodels import User
 from passlib.context import CryptContext # Şifreleme yapmak için oluşturulmuş bir kütüphane; kullanıcı parolalarını güvenli bir şekilde şifrelemek (hash) için kullanacağız.
@@ -9,6 +9,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm # T
 from jose import jwt, JWTError # JWT Encode (oluşturma) ve Decode (çözme) işlemleri için kullanacağız. Algoritmayı, secret keyi ve payload içeriğini burada belirleyeceğiz.
 from datetime import timedelta, datetime, timezone
 from starlette import status
+from fastapi.templating import Jinja2Templates #Frontendde templateleri kullanmak için import ediyoruz.
 
 router = APIRouter(
     prefix="/auth",             # Rota Öneki: Bu dosyadaki tüm endpoint'lerin başına otomatik olarak '/auth' ekler.
@@ -17,6 +18,8 @@ router = APIRouter(
 
 # Şifreleme işlemi için bcrypt algoritmasını kullanan bir instance (örnek) oluşturduk.
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+templates=Jinja2Templates(directory="templates") #Frontend için template klasörünü tanımladık.
 
 # SECRET_KEY: Bu keyi kendin oluşturmak istemezsen Google üzerinden "random 32 character string generator" ile unique bir key alabilirsin.
 # ALGORITHM: Şifreleme sırasında hangi matematiksel algoritmanın (HS256) kullanılacağını seçiyoruz.
@@ -80,6 +83,17 @@ def authenticate_user(username: str, password: str, db: db_dependency):
     if not bcrypt_context.verify(password, user.hashed_password):
         return False
     return user
+
+
+@router.get("/login-page") #login htmli render edecek olan fonksiyon.
+def render_login_page(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+
+
+@router.get("/register-page") #login htmli render edecek olan fonksiyon.
+def render_register_page(request: Request):
+    return templates.TemplateResponse("register.html", {"request": request})
+
 
 @router.post("/create_user", status_code=status.HTTP_201_CREATED)
 async def create_user(db: db_dependency, create_user_request: CreateUser):
