@@ -45,3 +45,4 @@ class User(Base):
     # Yetkilendirme: Kullanıcının rolu (Örn: 'admin' veya 'user').
     # Kimin hangi yetkiye sahip olacağını bu sütun sayesinde belirliyoruz.
     role = Column(String)
+    number=Column(Integer)

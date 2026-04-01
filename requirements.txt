@@ -1,22 +1,37 @@
-pydantic==2.8.2
-fastapi==0.112.3
-starlette==0.38.2
+pydantic==2.8.2 # Veri modellerini oluşturmak ve gelen verilerin doğruluğunu (tip kontrolü) denetlemek için.
+fastapi==0.112.3 # Uygulamamızın ana iskeleti; API uçlarını ve sunucu mantığını kurduğumuz ana kütüphane.
+starlette==0.38.2 # FastAPI'nin altında çalışan, web bağlantılarını ve durum kodlarını (status codes) yöneten yardımcı.
 
 #TO DO PROJESİ İÇİN
-bcrypt==4.0.1
-cryptography==43.0.0
-psycopg2-binary==2.9.9
-python-jose==3.3.0
-sqlalchemy==2.0.32
-uvicorn==0.30.6
-passlib==1.7.4
-pytest==8.3.2
-httpx==0.27.2
-pytest-asyncio==0.24.0
-aiofiles==24.1.0
-jinja2==3.1.4
-langchain==0.2.15
-python-dotenv==1.0.1
-google-generativeai==0.7.2
-langchain-google-genai==1.0.10
-markdown==3.7
+bcrypt==4.0.1 # Şifreleri karmaşık hale getirip güvenli şekilde saklamak için kullanılan algoritma kütüphanesi.
+cryptography==43.0.0 # Güvenlik işlemlerinde kullanılan temel şifreleme araçlarını sağlar.
+psycopg2-binary==2.9.9 # Eğer SQLite yerine PostgreSQL veritabanı kullanmak istersen gereken bağlantı sürücüsü.
+python-jose==3.3.0 # JWT (Token) üretmek ve bu token'ları çözerek kullanıcıyı tanımak için.
+sqlalchemy==2.0.32 # Veritabanı ile Python kodları arasında köprü kuran (ORM), SQL yazmadan sorgu atmayı sağlayan yapı.
+uvicorn==0.30.6 # Yazdığımız FastAPI kodunu ayağa kaldıran ve tarayıcıda görmemizi sağlayan hızlı sunucu.
+passlib==1.7.4 # Şifre hash'leme işlemlerini (bcrypt gibi) daha kolay yönetmemizi sağlayan yardımcı kütüphane.
+pytest==8.3.2 # Yazdığımız kodların doğru çalışıp çalışmadığını test etmek için kullandığımız ana test aracı.
+httpx==0.27.2 # Testler sırasında veya uygulama içinde dışarıdaki diğer sitelere/API'lara istek atmak için.
+pytest-asyncio==0.24.0 # Asenkron (async) fonksiyonlarımızı test edebilmek için pytest'e eklenen yardımcı.
+aiofiles==24.1.0 # Dosya okuma ve yazma işlemlerini programı dondurmadan (asenkron) yapabilmek için.
+jinja2==3.1.4 # HTML sayfaları oluştururken içine Python değişkenleri gömmemizi sağlayan şablon motoru.
+langchain==0.2.15 # Yapay zeka modellerini (LLM) projeye bağlamak ve zincirleme görevler yaptırmak için.
+python-dotenv==1.0.1 # Gizli kalması gereken (SECRET_KEY, API_KEY gibi) değişkenleri .env dosyasından okumak için.
+google-generativeai==0.7.2 # Google'ın Gemini gibi yapay zeka modellerine doğrudan erişim sağlamak için.
+langchain-google-genai==1.0.10 # LangChain ile Google yapay zeka modellerini uyumlu şekilde çalıştırmak için.
+markdown==3.7 # Yazdığımız markdown yazılarını (README gibi) HTML formatına çevirmek için.
+alembic==1.13.2 # Migration işlemleri, databaseye güncelleme yapma işlemleri için kullanılacak.
+                # Yüklendikten sonra terminalden "alembic init alembic" yazılarak aktif hale getirilir.
+                # Terminal komutundan sonra ana dosyada oluşan alembic.ini ve alembic klasörü içerisinde oluşan env.py dosyalarında değiştirilmesi gereken birkaç yer var:
+                # 1. alembic.ini içerisinde sqlalchemy.url path'ı değiştirilmeli. Girilmesi gereken değer tododatabase içerisinde yer alan "SQLALCHEMY_DATABASE_URL = 'sqlite:///./todoai_app.db'" değişkeninin url'sidir.
+                # Bu komut ile alembic hangi database ile uğraşacağını anlar.
+                # 2. env.py içerisinde 14. satırda bulunan "if config.config_file_name is not None:" kısmına ihtiyaç yok, burası silinecek.
+                # 3. 21. satırdaki "target_metadata = None" düzenlenmeli; bunun için başta yaptığın models kütüphanesi eklenmeli (import todomodels) ve "target_metadata = todomodels.Base.metadata" yazılmalı.
+                # Bu adımlardan sonra alembic tamamen hazır olur.
+                # Veritabanını güncellemek için terminale 'alembic revision -m "phone number added"' yazıldığında alembic/versions içinde yeni bir dosya oluşur.
+                # Bu dosya içinde revision id, upgrade ve downgrade fonksiyonları bulunur:
+                # - upgrade: Yeni versiyona geçildiğinde (sütun ekleme vb.) çalışacak fonksiyon.
+                # - downgrade: Yapılan değişikliği geri almak (kolon silmek vb.) istediğinde çalışacak fonksiyon.
+                # İkisini de yazmazsan değişiklik olmaz. upgrade fonksiyonuna "op." yazdıktan sonra seçenekleri değerlendirebilirsin.
+                # Örn: op.add_column("users", sa.Column("phone_number", sa.String(), nullable=True)) -> "users" tablosuna boş bırakılabilir phone_number ekle demek.
+                # Dosyayı kaydedip revision id'yi aldıktan sonra terminale "alembic upgrade <revision_id>" (Örn: alembic upgrade 3a45aa99c146) yazarsan kolon veritabanına eklenir.

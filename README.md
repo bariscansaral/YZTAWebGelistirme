@@ -269,3 +269,47 @@ Web tasarımında en kritik güvenlik kurallarından biri **veri izolasyonu**dur
 - **Bcrypt (Hashing):** Şifreleri "tek yönlü" karıştırır. Geri döndürülemez, sadece karşılaştırılabilir.
 - **Payload:** Token'ın içinde taşıdığı verilerdir (Kullanıcı adı, ID vb.).
 - **Expiration Time (exp):** Token'ın ömrüdür. Çalınsa bile kısa süre sonra geçersiz kalmasını sağlayarak güvenliği artırır.
+
+---
+
+## 🗄️ Veritabanı Migration İşlemleri (Alembic)
+
+Projemiz büyüdükçe veritabanı şemasına (tablolara) yeni alanlar eklememiz gerekir. Veri kaybı yaşamadan bu güncellemeleri yapmak için **Alembic** kütüphanesini kullanıyoruz.
+
+### 1. Başlangıç ve Kurulum
+Alembic paketini yükledikten sonra projede aktif hale getirmek için terminale şu komut yazılır:
+`alembic init alembic`
+Bu komut ana dizinde `alembic.ini` dosyasını ve `alembic/` klasörünü oluşturur.
+
+### 2. Yapılandırma Ayarları
+Alembic'in veritabanımızı tanıması için iki dosyada düzenleme yapıyoruz:
+
+* **`alembic.ini`**: İçerisindeki `sqlalchemy.url` satırını, `tododatabase.py` dosyasındaki URL ile değiştiriyoruz:
+    `sqlalchemy.url = sqlite:///./todoai_app.db`
+* **`alembic/env.py`**: 
+    - 21. satırdaki `target_metadata = None` kısmını, modellerimizi tanıması için şu şekilde güncelliyoruz:
+      ```python
+      import todomodels
+      target_metadata = todomodels.Base.metadata
+      ```
+
+### 3. Yeni Bir Versiyon (Revision) Oluşturma
+Veritabanında bir değişiklik (örneğin `phone_number` sütunu eklemek) yapacağımızda terminale şu komutu yazıyoruz:
+`alembic revision -m "phone number added"`
+
+Bu komut, `alembic/versions` klasörü içinde yeni bir Python dosyası oluşturur.
+
+
+
+### 4. Upgrade ve Downgrade Fonksiyonları
+Oluşan versiyon dosyasının içinde iki ana fonksiyon bulunur:
+* **`upgrade()`**: Yeni versiyona geçerken yapılacak değişiklikleri yazarız.
+    * Örn: `op.add_column("users", sa.Column("phone_number", sa.String(), nullable=True))` (Users tablosuna boş bırakılabilir bir telefon numarası sütunu ekler).
+* **`downgrade()`**: Yapılan değişikliği geri almak (sütunu silmek) istediğimizde kullanacağımız komutları yazarız.
+
+### 5. Değişiklikleri Veritabanına Uygulama
+Yazdığımız kodun veritabanına yansıması için terminale `upgrade` komutunu ve dosyadaki `Revision ID` numarasını yazıyoruz:
+`alembic upgrade 3a45aa99c146` (Buradaki numara her dosyada farklıdır).
+
+**Sonuç:** Belirlediğin kolon veritabanına veri kaybı olmadan eklenmiş olur.
+
